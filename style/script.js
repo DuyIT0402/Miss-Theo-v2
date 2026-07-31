@@ -42,7 +42,6 @@ let advanceTimeout = null;
 const totalSlides = slidesData.length;
 const starsContainer = document.getElementById("stars");
 const introScreen = document.getElementById("intro-screen");
-const heart = document.getElementById("heart");
 const bgMusic = document.getElementById("bg-music");
 const progressDots = document.getElementById("progress-dots");
 const slidesContainer = document.getElementById("slides");
@@ -69,6 +68,31 @@ function createSlides() {
 
     slide.appendChild(message);
     slide.appendChild(img);
+
+    if (index === totalSlides - 1) {
+      const overlay = document.createElement("div");
+      overlay.classList.add("final-text-overlay");
+      const lines = [
+        "Nhớ vợ",
+        "Anh nhớ em",
+        "Vợ ơi",
+        "Cố lên nhé",
+        "Anh chờ em về",
+        "Mình mãi là anh em",
+      ];
+
+      lines.forEach((text, lineIndex) => {
+        const line = document.createElement("div");
+        line.classList.add("shooting-line");
+        line.textContent = text;
+        line.style.setProperty("--line-delay", `${lineIndex * 0.8}s`);
+        line.style.setProperty("--line-top", `${18 + lineIndex * 12}%`);
+        overlay.appendChild(line);
+      });
+
+      slide.appendChild(overlay);
+    }
+
     slidesContainer.appendChild(slide);
   });
 
@@ -80,6 +104,7 @@ function init() {
   createProgressDots();
   preloadImages();
   setEventListeners();
+  createIntroHeartEffect();
   program();
 }
 
@@ -138,12 +163,52 @@ function textRevealEffect(element, finalText, speed = 30, onComplete) {
   element.classList.add("visible");
 }
 
+function getMobileSettings() {
+  const isMobile = window.innerWidth <= 768;
+
+  return {
+    itemCount: isMobile ? 10 : 18,
+    starCount: isMobile ? 60 : 90,
+    minSize: isMobile ? 34 : 52,
+    maxSize: isMobile ? 68 : 110,
+    fallDurationMin: isMobile ? 9 : 7,
+    fallDurationMax: isMobile ? 13 : 10,
+    starDurationMin: isMobile ? 7 : 5,
+    starDurationMax: isMobile ? 12 : 10,
+  };
+}
+
+function gatherFallingItemsIntoHeart() {
+  const items = Array.from(document.querySelectorAll('.falling-item'));
+  if (items.length === 0) {
+    return;
+  }
+
+  const pieces = items.length;
+  items.forEach((item, index) => {
+    const t = (Math.PI * 2 * index) / pieces;
+    const x = 50 + 20 * Math.pow(Math.sin(t), 3);
+    const y = 38 - (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+    item.style.transition = 'left 1.4s ease, top 1.4s ease, opacity 1.4s ease, transform 1.4s ease';
+    item.style.left = `${x}%`;
+    item.style.top = `${y}%`;
+    item.style.opacity = '0.25';
+    item.style.transform = 'scale(0.45)';
+  });
+
+  setTimeout(() => {
+    items.forEach((item) => item.remove());
+  }, 2200);
+}
+
 function startFallingEffect() {
+  showFinalHeart();
+
   const fallingSources = [
     ...localImages.map((src) => ({ src, isImage: true })),
     ...slidesData.map((data) => ({ src: data.gif, isImage: false })),
   ];
-  const itemCount = 24;
+  const { itemCount, minSize, maxSize, fallDurationMin, fallDurationMax } = getMobileSettings();
 
   for (let i = 0; i < itemCount; i++) {
     const { src, isImage } =
@@ -155,15 +220,16 @@ function startFallingEffect() {
     item.src = src;
     item.alt = "";
 
-    const size = Math.random() * 70 + 60;
+    const size = Math.random() * (maxSize - minSize) + minSize;
     item.style.width = `${size}px`;
     item.style.height = `${size}px`;
-    item.style.left = `${Math.random() * 90 + 5}%`;
+    item.style.left = `${Math.random() * 92 + 4}%`;
+    item.style.top = `${Math.random() * -40 - 10}%`;
     item.style.setProperty("--rotation", `${Math.random() * 60 - 30}deg`);
     item.style.opacity = "0";
 
-    const fallDuration = Math.random() * 6 + 6;
-    const delay = Math.random() * 2;
+    const fallDuration = Math.random() * (fallDurationMax - fallDurationMin) + fallDurationMin;
+    const delay = Math.random() * (window.innerWidth <= 768 ? 1.2 : 2);
 
     if (isImage) {
       const borderDuration = Math.random() * 2 + 2;
@@ -175,23 +241,33 @@ function startFallingEffect() {
     }
 
     fallingContainer.appendChild(item);
-
-    requestAnimationFrame(() => {
-      item.style.opacity = "1";
-    });
+    item.style.opacity = "1";
   }
 
+  const gatherDelay = window.innerWidth <= 768 ? 7000 : 9000;
   setTimeout(() => {
-    fallingContainer.style.transition = "opacity 1.5s ease";
-    fallingContainer.style.opacity = "0";
-    setTimeout(() => {
-      showEnding();
-    }, 1800);
-  }, 26000);
+    gatherFallingItemsIntoHeart();
+  }, gatherDelay);
+}
+
+function showFinalHeart() {
+  const finalHeart = document.getElementById("final-heart");
+  if (!finalHeart) return;
+
+  finalHeart.classList.add("visible");
+  setTimeout(() => {
+    finalHeart.classList.remove("visible");
+  }, 12000);
+}
+
+function setFinalSlideEffect(visible) {
+  const overlay = document.querySelector(".final-text-overlay");
+  if (!overlay) return;
+  overlay.classList.toggle("visible", visible);
 }
 
 function createStars() {
-  const starCount = 100;
+  const { starCount, starDurationMin, starDurationMax } = getMobileSettings();
 
   for (let i = 0; i < starCount; i++) {
     const star = document.createElement("div");
@@ -201,10 +277,32 @@ function createStars() {
     star.style.height = `${size}px`;
     star.style.left = `${Math.random() * 100}%`;
     star.style.top = `${Math.random() * -100}px`;
-    const duration = Math.random() * 10 + 5;
+    const duration = Math.random() * (starDurationMax - starDurationMin) + starDurationMin;
     star.style.animationDuration = `${duration}s`;
     star.style.animationDelay = `${Math.random() * 5}s`;
     starsContainer.appendChild(star);
+  }
+}
+
+function createIntroHeartEffect() {
+  const effectContainer = document.getElementById("heart-effect");
+  if (!effectContainer) return;
+  effectContainer.innerHTML = "";
+
+  const pieces = 110;
+  const scale = 1.8;
+
+  for (let i = 0; i < pieces; i++) {
+    const t = (Math.PI * 2 * i) / pieces;
+    const x = 16 * Math.pow(Math.sin(t), 3);
+    const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+    const piece = document.createElement("div");
+    piece.className = "heart-piece";
+    piece.style.left = `${50 + x * scale}%`;
+    piece.style.top = `${38 - y * scale}%`;
+    piece.style.animationDelay = `${Math.random() * 1.2}s`;
+    piece.style.animationDuration = `${2.8 + Math.random() * 1.2}s`;
+    effectContainer.appendChild(piece);
   }
 }
 
@@ -235,6 +333,7 @@ function showSlide(index) {
     `#message${index + 1} .hacker-text`,
   );
   const isLastSlide = index === totalSlides - 1;
+  setFinalSlideEffect(isLastSlide);
 
   textRevealEffect(messageElement, slidesData[index].text, 28, () => {
     advanceTimeout = setTimeout(() => {
@@ -274,11 +373,8 @@ function startPresentation() {
 }
 
 function setEventListeners() {
-  heart.addEventListener("click", startPresentation);
-  introScreen.addEventListener("click", (e) => {
-    if (e.target === heart) {
-      startPresentation();
-    }
+  introScreen.addEventListener("click", () => {
+    startPresentation();
   });
 
   document.addEventListener("keydown", (e) => {
@@ -309,7 +405,27 @@ function adjustImages() {
   });
 }
 
+class Tool {
+  static randomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
 
+  static randomColorHSL(hue, saturation, lightness) {
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  }
+}
+
+class Angle {
+  constructor(a) {
+    this.a = a;
+    this.rad = (this.a * Math.PI) / 180;
+  }
+
+  incDec(num) {
+    this.a += num;
+    this.rad = (this.a * Math.PI) / 180;
+  }
+}
 
 const overlay = document.createElement("div");
 overlay.className = "zoom-overlay";
@@ -348,102 +464,7 @@ function enableImageZoom(){
 }
 
 enableImageZoom();
-/* ===========================
-   ENDING SCENE
-=========================== */
 
-const endingScene = document.getElementById("endingScene");
-const endingText = document.getElementById("endingText");
-const paperPlane = document.getElementById("paperPlane");
-const restartStory = document.getElementById("restartStory");
-
-const endingMessages = [
-`Có người từng hỏi anh...
-
-Yêu xa...
-
-Có mệt không?`,
-
-`Anh từng nghĩ...
-
-Khoảng cách...
-
-Là điều khó nhất.`,
-
-`Nhưng sau này anh mới hiểu...
-
-Điều đáng sợ nhất...
-
-Là khi hai người vẫn còn thương nhau...
-
-Nhưng lại chọn im lặng.`,
-
-`Em đã nhiều lần...
-
-Bay từ Hà Nội...
-
-Đến Sài Gòn...
-
-Để gặp anh.`,
-
-`Lần này...
-
-Nếu còn cơ hội...
-
-Để anh là người...
-
-Bay về phía em.
-
-❤️`
-];
-
-function showEnding(){
-
-    endingScene.classList.add("show");
-
-    let current = 0;
-
-    function nextMessage(){
-
-        if(current >= endingMessages.length){
-
-            paperPlane.classList.add("fly");
-
-            setTimeout(()=>{
-
-                restartStory.classList.add("show");
-
-            },8000);
-
-            return;
-
-        }
-
-        endingText.classList.remove("show");
-
-        setTimeout(()=>{
-
-            endingText.innerHTML = endingMessages[current];
-
-            endingText.classList.add("show");
-
-            current++;
-
-            setTimeout(nextMessage,4500);
-
-        },500);
-
-    }
-
-    nextMessage();
-
-}
-
-restartStory.onclick = () => {
-
-    location.reload();
-
-};
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
 } else {

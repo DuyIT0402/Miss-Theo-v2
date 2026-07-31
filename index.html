@@ -19,8 +19,9 @@
   </head>
   <body>
     <div id="intro-screen">
-      <div id="intro-text">Chạm vào trái tim</div>
-      <div id="heart" role="button" aria-label="Bắt đầu trình chiếu">❤️</div>
+      <div id="intro-text">Chạm để bắt đầu</div>
+      <div id="heart">❤</div>
+      <div id="heart-effect" aria-hidden="true"></div>
     </div>
 
     <div class="stars" id="stars" aria-hidden="true"></div>
@@ -32,28 +33,11 @@
       id="falling-container"
       aria-hidden="true"
     ></div>
-
-    <div class="progress-dots" id="progress-dots"></div>
+    <div id="final-heart" aria-hidden="true">❤</div>    <div class="progress-dots" id="progress-dots"></div>
 
     <audio id="bg-music" loop>
       <source src="./style/nhac.mp3" type="audio/mpeg" />
     </audio>
-
-    <!-- ===== ENDING SCENE ===== -->
-
-<div id="endingScene">
-
-    <div class="ending-bg"></div>
-
-    <div id="endingText"></div>
-
-    <div id="paperPlane">
-        ✈️
-    </div>
-
-    <button id="restartStory">
-        ❤️ Xem lại câu chuyện
-    </button>
 
     <script src="./style/script.js"></script>
   </body>
