@@ -2,10 +2,12 @@ const slidesData = [
   {
     text:  `Chào Thẻo iu của anh❤️Nếu em đang ở đây thì cảm ơn em đã dành chút thời gian cho món quà nhỏ này.Anh chỉ muốn cùng em nhìn lại những kỷ niệm đẹp mà chúng ta đã từng có.`,
     gif: "https://i.pinimg.com/originals/b6/b1/d6/b6b1d64609f266d8f236752d8551f26f.gif",
+    alt: "Kỷ niệm yêu thương",
   },
   {
     text: `Anh vẫn nhớ từng lần em bay từ Hà Nội vào Sài Gòn.Mỗi lần được gặp em, cả thành phố như vui hơn.Cảm ơn em vì đã luôn cố gắng để khoảng cách không còn quá xa.`,
     gif: "https://i.pinimg.com/originals/3f/4e/d3/3f4ed3cb1539cb42dc93b78020a3ef55.gif",
+    alt: "Hà Nội đến Sài Gòn",
   },
   {
     text: `Có lẽ anh chưa phải là người hoàn hảo.Có những lúc anh quá bận, có những điều anh làm chưa đủ tốt.Nhưng có một điều anh chưa từng thay đổi...Đó là anh luôn trân trọng em.`,
@@ -35,7 +37,7 @@ const localImages = Array.from(
 
 let currentSlide = 0;
 let finaleShown = false;
-let currentHackerInterval = null;
+let currentTextInterval = null;
 let advanceTimeout = null;
 const totalSlides = slidesData.length;
 const starsContainer = document.getElementById("stars");
@@ -63,7 +65,7 @@ function createSlides() {
 
     const img = document.createElement("img");
     img.src = data.gif;
-    img.alt = data.alt;
+    img.alt = data.alt || "Ảnh kỷ niệm";
 
     slide.appendChild(message);
     slide.appendChild(img);
@@ -114,28 +116,26 @@ function program(delay = 200) {
   })();
 }
 
-const hackerLetters = "01!@#$%^&*()_+-=[]{}|;:,.<>?/";
+function textRevealEffect(element, finalText, speed = 30, onComplete) {
+  let index = 0;
+  element.textContent = "";
+  element.classList.remove("complete");
+  if (currentTextInterval) {
+    clearInterval(currentTextInterval);
+    currentTextInterval = null;
+  }
 
-function hackerEffect(element, finalText, iterations = 3, onComplete) {
-  let iteration = 0;
-  currentHackerInterval = setInterval(() => {
-    element.textContent = finalText
-      .split("")
-      .map((char, index) => {
-        if (index < iteration || char === " ") {
-          return finalText[index];
-        }
-        return hackerLetters[Math.floor(Math.random() * hackerLetters.length)];
-      })
-      .join("");
-    if (iteration >= finalText.length) {
-      clearInterval(currentHackerInterval);
-      currentHackerInterval = null;
-      element.classList.add("complete");
+  currentTextInterval = setInterval(() => {
+    element.textContent = finalText.slice(0, index + 1);
+    index += 1;
+    if (index >= finalText.length) {
+      clearInterval(currentTextInterval);
+      currentTextInterval = null;
+      element.classList.add("complete", "visible");
       if (onComplete) onComplete();
     }
-    iteration += 1 / iterations;
-  }, 30);
+  }, speed);
+  element.classList.add("visible");
 }
 
 function startFallingEffect() {
@@ -155,14 +155,15 @@ function startFallingEffect() {
     item.src = src;
     item.alt = "";
 
-    const size = Math.random() * 80 + 50;
+    const size = Math.random() * 70 + 60;
     item.style.width = `${size}px`;
     item.style.height = `${size}px`;
+    item.style.left = `${Math.random() * 90 + 5}%`;
+    item.style.setProperty("--rotation", `${Math.random() * 60 - 30}deg`);
+    item.style.opacity = "0";
 
-    item.style.left = `${Math.random() * 95}%`;
-
-    const fallDuration = Math.random() * 6 + 5;
-    const delay = Math.random() * 6;
+    const fallDuration = Math.random() * 6 + 6;
+    const delay = Math.random() * 2;
 
     if (isImage) {
       const borderDuration = Math.random() * 2 + 2;
@@ -174,7 +175,19 @@ function startFallingEffect() {
     }
 
     fallingContainer.appendChild(item);
+
+    requestAnimationFrame(() => {
+      item.style.opacity = "1";
+    });
   }
+
+  setTimeout(() => {
+    fallingContainer.style.transition = "opacity 1.5s ease";
+    fallingContainer.style.opacity = "0";
+    setTimeout(() => {
+      showEnding();
+    }, 1800);
+  }, 26000);
 }
 
 function createStars() {
@@ -198,7 +211,7 @@ function createStars() {
 function showSlide(index) {
   if (index < 0) index = totalSlides - 1;
   if (index >= totalSlides) index = 0;
-  if (currentHackerInterval) clearInterval(currentHackerInterval);
+  if (currentTextInterval) clearInterval(currentTextInterval);
   if (advanceTimeout) clearTimeout(advanceTimeout);
 
   currentSlide = index;
@@ -215,7 +228,7 @@ function showSlide(index) {
   });
 
   document.querySelectorAll(".hacker-text").forEach((text) => {
-    text.classList.remove("complete");
+    text.classList.remove("complete", "visible");
   });
 
   const messageElement = document.querySelector(
@@ -223,7 +236,7 @@ function showSlide(index) {
   );
   const isLastSlide = index === totalSlides - 1;
 
-  hackerEffect(messageElement, slidesData[index].text, 3, () => {
+  textRevealEffect(messageElement, slidesData[index].text, 28, () => {
     advanceTimeout = setTimeout(() => {
       if (isLastSlide) {
         if (!finaleShown) {
@@ -248,9 +261,10 @@ function prevSlide() {
 
 function startPresentation() {
   introScreen.style.opacity = "0";
+  introScreen.style.pointerEvents = "none";
   setTimeout(() => {
     introScreen.style.display = "none";
-  }, 1000);
+  }, 400);
 
   createStars();
   showSlide(0);
@@ -261,6 +275,11 @@ function startPresentation() {
 
 function setEventListeners() {
   heart.addEventListener("click", startPresentation);
+  introScreen.addEventListener("click", (e) => {
+    if (e.target === heart) {
+      startPresentation();
+    }
+  });
 
   document.addEventListener("keydown", (e) => {
     if (introScreen.style.display === "none") {
@@ -271,7 +290,7 @@ function setEventListeners() {
 
   document.querySelectorAll(".dot").forEach((dot) => {
     dot.addEventListener("click", (e) => {
-      const index = parseInt(e.target.getAttribute("data-index"));
+      const index = parseInt(e.target.getAttribute("data-index"), 10);
       showSlide(index);
     });
   });
@@ -329,5 +348,104 @@ function enableImageZoom(){
 }
 
 enableImageZoom();
+/* ===========================
+   ENDING SCENE
+=========================== */
 
-init();
+const endingScene = document.getElementById("endingScene");
+const endingText = document.getElementById("endingText");
+const paperPlane = document.getElementById("paperPlane");
+const restartStory = document.getElementById("restartStory");
+
+const endingMessages = [
+`Có người từng hỏi anh...
+
+Yêu xa...
+
+Có mệt không?`,
+
+`Anh từng nghĩ...
+
+Khoảng cách...
+
+Là điều khó nhất.`,
+
+`Nhưng sau này anh mới hiểu...
+
+Điều đáng sợ nhất...
+
+Là khi hai người vẫn còn thương nhau...
+
+Nhưng lại chọn im lặng.`,
+
+`Em đã nhiều lần...
+
+Bay từ Hà Nội...
+
+Đến Sài Gòn...
+
+Để gặp anh.`,
+
+`Lần này...
+
+Nếu còn cơ hội...
+
+Để anh là người...
+
+Bay về phía em.
+
+❤️`
+];
+
+function showEnding(){
+
+    endingScene.classList.add("show");
+
+    let current = 0;
+
+    function nextMessage(){
+
+        if(current >= endingMessages.length){
+
+            paperPlane.classList.add("fly");
+
+            setTimeout(()=>{
+
+                restartStory.classList.add("show");
+
+            },8000);
+
+            return;
+
+        }
+
+        endingText.classList.remove("show");
+
+        setTimeout(()=>{
+
+            endingText.innerHTML = endingMessages[current];
+
+            endingText.classList.add("show");
+
+            current++;
+
+            setTimeout(nextMessage,4500);
+
+        },500);
+
+    }
+
+    nextMessage();
+
+}
+
+restartStory.onclick = () => {
+
+    location.reload();
+
+};
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+} else {
+    init();
+}
