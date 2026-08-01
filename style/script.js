@@ -139,11 +139,8 @@ function textRevealEffect(element, finalText, speed = 30, onComplete) {
 }
 
 function startFallingEffect() {
-  const fallingSources = [
-    ...localImages.map((src) => ({ src, isImage: true })),
-    ...slidesData.map((data) => ({ src: data.gif, isImage: false })),
-  ];
-  const itemCount = 24;
+  const fallingSources = localImages.map((src) => ({ src, isImage: true }));
+  const itemCount = 12;
 
   for (let i = 0; i < itemCount; i++) {
     const { src, isImage } =

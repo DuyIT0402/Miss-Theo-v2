@@ -363,9 +363,7 @@ pointer-events: auto;
 .falling-item--image {
   border: 3px solid #ff0000;
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
-  animation:
-    fallDown linear infinite,
-    borderRainbow 3s linear infinite;
+  animation: fallDown linear infinite;
 }
 
 @keyframes fallDown {
@@ -421,6 +419,14 @@ pointer-events: auto;
 }
 
 @media (max-width: 480px) {
+  body {
+    background-image: none;
+    background-color: #06020f;
+    background: radial-gradient(circle at top, rgba(90, 60, 150, 0.6), rgba(8, 0, 18, 0.98));
+    background-attachment: scroll;
+    background-position: center center;
+  }
+
   #intro-text {
     font-size: clamp(1.3rem, 5vw, 2rem);
   }
