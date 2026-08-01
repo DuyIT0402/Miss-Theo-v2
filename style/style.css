@@ -463,22 +463,22 @@ pointer-events: auto;
   }
 
   body::before {
-    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 30%),
-      linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.26));
-    opacity: 0.48;
+    background: none;
+    opacity: 0;
   }
 
   body::after {
-    opacity: 0.08;
-    background-size: 140px 140px;
+    background: none;
+    opacity: 0;
   }
 
   #intro-screen {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.18));
+    background: transparent;
   }
 
   #intro-screen::before {
-    background: radial-gradient(circle at 50% 24%, rgba(255, 255, 255, 0.08), transparent 36%);
+    background: none;
+    opacity: 0;
   }
 
   #intro-text {
