@@ -420,11 +420,26 @@ pointer-events: auto;
 
 @media (max-width: 480px) {
   body {
-    background-image: none;
+    background-image: url("https://i.pinimg.com/originals/80/93/eb/8093eb596b38846d47cf30feb907d68f.gif");
     background-color: #06020f;
-    background: radial-gradient(circle at top, rgba(90, 60, 150, 0.6), rgba(8, 0, 18, 0.98));
-    background-attachment: scroll;
+    background-size: cover;
     background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+  }
+
+  body::before {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.78));
+    opacity: 0.95;
+  }
+
+  body::after {
+    opacity: 0.05;
+    background-size: 140px 140px;
+  }
+
+  #intro-screen {
+    background: radial-gradient(circle at center, rgba(255, 105, 180, 0.1), rgba(0, 0, 0, 0.95));
   }
 
   #intro-text {
@@ -450,6 +465,11 @@ pointer-events: auto;
 
   .progress-dots {
     bottom: 14px;
+  }
+
+  .ending-bg {
+    filter: none;
+    animation: none;
   }
 }
 

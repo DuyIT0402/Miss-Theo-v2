@@ -47,6 +47,7 @@ const bgMusic = document.getElementById("bg-music");
 const progressDots = document.getElementById("progress-dots");
 const slidesContainer = document.getElementById("slides");
 const fallingContainer = document.getElementById("falling-container");
+const isMobile = window.matchMedia("(max-width: 768px)").matches;
 let slides;
 
 function createSlides() {
@@ -140,7 +141,7 @@ function textRevealEffect(element, finalText, speed = 30, onComplete) {
 
 function startFallingEffect() {
   const fallingSources = localImages.map((src) => ({ src, isImage: true }));
-  const itemCount = 12;
+  const itemCount = isMobile ? 8 : 12;
 
   for (let i = 0; i < itemCount; i++) {
     const { src, isImage } =
@@ -152,7 +153,7 @@ function startFallingEffect() {
     item.src = src;
     item.alt = "";
 
-    const size = Math.random() * 70 + 60;
+    const size = isMobile ? Math.random() * 48 + 42 : Math.random() * 70 + 60;
     item.style.width = `${size}px`;
     item.style.height = `${size}px`;
     item.style.left = `${Math.random() * 90 + 5}%`;
@@ -212,7 +213,7 @@ function showShootingStarText(callback) {
 }
 
 function createStars() {
-  const starCount = 100;
+  const starCount = isMobile ? 36 : 100;
 
   for (let i = 0; i < starCount; i++) {
     const star = document.createElement("div");
