@@ -47,6 +47,7 @@ const bgMusic = document.getElementById("bg-music");
 const progressDots = document.getElementById("progress-dots");
 const slidesContainer = document.getElementById("slides");
 const fallingContainer = document.getElementById("falling-container");
+const rainContainer = document.getElementById("rain");
 const isMobile = window.matchMedia("(max-width: 768px)").matches;
 let slides;
 
@@ -230,6 +231,33 @@ function createStars() {
   }
 }
 
+function createRain() {
+  if (!rainContainer) return;
+  rainContainer.innerHTML = "";
+
+  const dropCount = isMobile ? 28 : 48;
+
+  for (let i = 0; i < dropCount; i++) {
+    const drop = document.createElement("div");
+    drop.classList.add("rain-drop");
+
+    const left = Math.random() * 100;
+    const duration = Math.random() * 0.7 + 0.8;
+    const delay = Math.random() * 0.8;
+    const drift = (Math.random() * 24 - 12).toFixed(2);
+
+    drop.style.left = `${left}%`;
+    drop.style.height = `${Math.random() * 16 + 12}px`;
+    drop.style.width = `${Math.random() * 1.2 + 0.8}px`;
+    drop.style.opacity = `${0.35 + Math.random() * 0.35}`;
+    drop.style.animationDuration = `${duration}s`;
+    drop.style.animationDelay = `${delay}s`;
+    drop.style.setProperty("--drift", `${drift}px`);
+
+    rainContainer.appendChild(drop);
+  }
+}
+
 function showSlide(index) {
   if (index < 0) index = totalSlides - 1;
   if (index >= totalSlides) index = 0;
@@ -289,6 +317,7 @@ function startPresentation() {
   }, 400);
 
   createStars();
+  createRain();
   showSlide(0);
 
   bgMusic.currentTime = 20;

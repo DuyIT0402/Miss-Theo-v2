@@ -169,7 +169,27 @@ body::after {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
+}
+
+.rain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+  opacity: 0.9;
+}
+
+.rain-drop {
+  position: absolute;
+  top: -12px;
+  width: 1.2px;
+  height: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.95));
+  border-radius: 999px;
+  animation: rainFall linear infinite;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
 }
 
 .star {
@@ -193,6 +213,20 @@ body::after {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes rainFall {
+  0% {
+    transform: translate3d(0, -20px, 0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, 110vh, 0) translateX(var(--drift, 0px));
+    opacity: 0.8;
   }
 }
 
@@ -439,7 +473,11 @@ pointer-events: auto;
   }
 
   #intro-screen {
-    background: radial-gradient(circle at center, rgba(255, 105, 180, 0.1), rgba(0, 0, 0, 0.95));
+    background: linear-gradient(180deg, rgba(6, 2, 15, 0.16), rgba(6, 2, 15, 0.62));
+  }
+
+  #intro-screen::before {
+    background: radial-gradient(circle at 50% 24%, rgba(255, 255, 255, 0.08), transparent 36%);
   }
 
   #intro-text {
