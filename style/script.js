@@ -42,6 +42,7 @@ let advanceTimeout = null;
 const totalSlides = slidesData.length;
 const starsContainer = document.getElementById("stars");
 const introScreen = document.getElementById("intro-screen");
+const heart = document.getElementById("heart");
 const bgMusic = document.getElementById("bg-music");
 const progressDots = document.getElementById("progress-dots");
 const slidesContainer = document.getElementById("slides");
@@ -68,31 +69,6 @@ function createSlides() {
 
     slide.appendChild(message);
     slide.appendChild(img);
-
-    if (index === totalSlides - 1) {
-      const overlay = document.createElement("div");
-      overlay.classList.add("final-text-overlay");
-      const lines = [
-        "Nhớ vợ",
-        "Anh nhớ em",
-        "Vợ ơi",
-        "Cố lên nhé",
-        "Anh chờ em về",
-        "Mình mãi là anh em",
-      ];
-
-      lines.forEach((text, lineIndex) => {
-        const line = document.createElement("div");
-        line.classList.add("shooting-line");
-        line.textContent = text;
-        line.style.setProperty("--line-delay", `${lineIndex * 0.8}s`);
-        line.style.setProperty("--line-top", `${18 + lineIndex * 12}%`);
-        overlay.appendChild(line);
-      });
-
-      slide.appendChild(overlay);
-    }
-
     slidesContainer.appendChild(slide);
   });
 
@@ -104,7 +80,6 @@ function init() {
   createProgressDots();
   preloadImages();
   setEventListeners();
-  createIntroHeartEffect();
   program();
 }
 
@@ -163,52 +138,12 @@ function textRevealEffect(element, finalText, speed = 30, onComplete) {
   element.classList.add("visible");
 }
 
-function getMobileSettings() {
-  const isMobile = window.innerWidth <= 768;
-
-  return {
-    itemCount: isMobile ? 10 : 18,
-    starCount: isMobile ? 60 : 90,
-    minSize: isMobile ? 34 : 52,
-    maxSize: isMobile ? 68 : 110,
-    fallDurationMin: isMobile ? 9 : 7,
-    fallDurationMax: isMobile ? 13 : 10,
-    starDurationMin: isMobile ? 7 : 5,
-    starDurationMax: isMobile ? 12 : 10,
-  };
-}
-
-function gatherFallingItemsIntoHeart() {
-  const items = Array.from(document.querySelectorAll('.falling-item'));
-  if (items.length === 0) {
-    return;
-  }
-
-  const pieces = items.length;
-  items.forEach((item, index) => {
-    const t = (Math.PI * 2 * index) / pieces;
-    const x = 50 + 20 * Math.pow(Math.sin(t), 3);
-    const y = 38 - (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-    item.style.transition = 'left 1.4s ease, top 1.4s ease, opacity 1.4s ease, transform 1.4s ease';
-    item.style.left = `${x}%`;
-    item.style.top = `${y}%`;
-    item.style.opacity = '0.25';
-    item.style.transform = 'scale(0.45)';
-  });
-
-  setTimeout(() => {
-    items.forEach((item) => item.remove());
-  }, 2200);
-}
-
 function startFallingEffect() {
-  showFinalHeart();
-
   const fallingSources = [
     ...localImages.map((src) => ({ src, isImage: true })),
     ...slidesData.map((data) => ({ src: data.gif, isImage: false })),
   ];
-  const { itemCount, minSize, maxSize, fallDurationMin, fallDurationMax } = getMobileSettings();
+  const itemCount = 24;
 
   for (let i = 0; i < itemCount; i++) {
     const { src, isImage } =
@@ -220,16 +155,15 @@ function startFallingEffect() {
     item.src = src;
     item.alt = "";
 
-    const size = Math.random() * (maxSize - minSize) + minSize;
+    const size = Math.random() * 70 + 60;
     item.style.width = `${size}px`;
     item.style.height = `${size}px`;
-    item.style.left = `${Math.random() * 92 + 4}%`;
-    item.style.top = `${Math.random() * -40 - 10}%`;
+    item.style.left = `${Math.random() * 90 + 5}%`;
     item.style.setProperty("--rotation", `${Math.random() * 60 - 30}deg`);
     item.style.opacity = "0";
 
-    const fallDuration = Math.random() * (fallDurationMax - fallDurationMin) + fallDurationMin;
-    const delay = Math.random() * (window.innerWidth <= 768 ? 1.2 : 2);
+    const fallDuration = Math.random() * 6 + 6;
+    const delay = Math.random() * 2;
 
     if (isImage) {
       const borderDuration = Math.random() * 2 + 2;
@@ -241,33 +175,47 @@ function startFallingEffect() {
     }
 
     fallingContainer.appendChild(item);
-    item.style.opacity = "1";
+
+    requestAnimationFrame(() => {
+      item.style.opacity = "1";
+    });
   }
 
-  const gatherDelay = window.innerWidth <= 768 ? 7000 : 9000;
   setTimeout(() => {
-    gatherFallingItemsIntoHeart();
-  }, gatherDelay);
+    fallingContainer.style.transition = "opacity 1.5s ease";
+    fallingContainer.style.opacity = "0";
+    setTimeout(() => {
+      showShootingStarText(showEnding);
+    }, 1800);
+  }, 26000);
 }
 
-function showFinalHeart() {
-  const finalHeart = document.getElementById("final-heart");
-  if (!finalHeart) return;
+function showShootingStarText(callback) {
+  const shootingStar = document.getElementById("shootingStarText");
+  if (!shootingStar) {
+    if (callback) callback();
+    return;
+  }
 
-  finalHeart.classList.add("visible");
-  setTimeout(() => {
-    finalHeart.classList.remove("visible");
-  }, 12000);
-}
+  shootingStar.classList.remove("fly");
+  shootingStar.style.opacity = "1";
 
-function setFinalSlideEffect(visible) {
-  const overlay = document.querySelector(".final-text-overlay");
-  if (!overlay) return;
-  overlay.classList.toggle("visible", visible);
+  requestAnimationFrame(() => {
+    shootingStar.classList.add("fly");
+  });
+
+  function handleAnimationEnd() {
+    shootingStar.removeEventListener("animationend", handleAnimationEnd);
+    shootingStar.style.opacity = "0";
+    shootingStar.classList.remove("fly");
+    if (callback) callback();
+  }
+
+  shootingStar.addEventListener("animationend", handleAnimationEnd);
 }
 
 function createStars() {
-  const { starCount, starDurationMin, starDurationMax } = getMobileSettings();
+  const starCount = 100;
 
   for (let i = 0; i < starCount; i++) {
     const star = document.createElement("div");
@@ -277,32 +225,10 @@ function createStars() {
     star.style.height = `${size}px`;
     star.style.left = `${Math.random() * 100}%`;
     star.style.top = `${Math.random() * -100}px`;
-    const duration = Math.random() * (starDurationMax - starDurationMin) + starDurationMin;
+    const duration = Math.random() * 10 + 5;
     star.style.animationDuration = `${duration}s`;
     star.style.animationDelay = `${Math.random() * 5}s`;
     starsContainer.appendChild(star);
-  }
-}
-
-function createIntroHeartEffect() {
-  const effectContainer = document.getElementById("heart-effect");
-  if (!effectContainer) return;
-  effectContainer.innerHTML = "";
-
-  const pieces = 110;
-  const scale = 1.8;
-
-  for (let i = 0; i < pieces; i++) {
-    const t = (Math.PI * 2 * i) / pieces;
-    const x = 16 * Math.pow(Math.sin(t), 3);
-    const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-    const piece = document.createElement("div");
-    piece.className = "heart-piece";
-    piece.style.left = `${50 + x * scale}%`;
-    piece.style.top = `${38 - y * scale}%`;
-    piece.style.animationDelay = `${Math.random() * 1.2}s`;
-    piece.style.animationDuration = `${2.8 + Math.random() * 1.2}s`;
-    effectContainer.appendChild(piece);
   }
 }
 
@@ -333,7 +259,6 @@ function showSlide(index) {
     `#message${index + 1} .hacker-text`,
   );
   const isLastSlide = index === totalSlides - 1;
-  setFinalSlideEffect(isLastSlide);
 
   textRevealEffect(messageElement, slidesData[index].text, 28, () => {
     advanceTimeout = setTimeout(() => {
@@ -373,8 +298,11 @@ function startPresentation() {
 }
 
 function setEventListeners() {
-  introScreen.addEventListener("click", () => {
-    startPresentation();
+  heart.addEventListener("click", startPresentation);
+  introScreen.addEventListener("click", (e) => {
+    if (e.target === heart) {
+      startPresentation();
+    }
   });
 
   document.addEventListener("keydown", (e) => {
@@ -405,27 +333,7 @@ function adjustImages() {
   });
 }
 
-class Tool {
-  static randomNumber(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  }
 
-  static randomColorHSL(hue, saturation, lightness) {
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-  }
-}
-
-class Angle {
-  constructor(a) {
-    this.a = a;
-    this.rad = (this.a * Math.PI) / 180;
-  }
-
-  incDec(num) {
-    this.a += num;
-    this.rad = (this.a * Math.PI) / 180;
-  }
-}
 
 const overlay = document.createElement("div");
 overlay.className = "zoom-overlay";
@@ -464,7 +372,408 @@ function enableImageZoom(){
 }
 
 enableImageZoom();
+/* ===========================
+   ENDING SCENE
+=========================== */
 
+const endingScene = document.getElementById("endingScene");
+const endingText = document.getElementById("endingText");
+const restartStory = document.getElementById("restartStory");
+
+const endingMessages = [
+
+`Có người hỏi anh...
+
+Điều đẹp nhất của tình yêu là gì?
+
+Anh nghĩ rất lâu.`,
+
+`Rồi anh nhận ra...
+
+Điều đẹp nhất...
+
+Là gặp được một người...
+
+Khiến mình muốn sống tốt hơn mỗi ngày.`,
+
+`Anh từng nghĩ...
+
+Yêu là nói thật nhiều.
+
+Sau này mới hiểu...
+
+Lắng nghe...
+
+Mới khó.`,
+
+`Có những cuộc cãi vã...
+
+Không phải vì hết thương.
+
+Chỉ là...
+
+Cả hai đều đang đợi...
+
+Một người lên tiếng trước.`,
+
+`Anh cũng từng bướng bỉnh.
+
+Từng nghĩ...
+
+Im lặng sẽ làm mọi chuyện tốt hơn.
+
+Nhưng hóa ra...
+
+Im lặng chỉ làm khoảng cách dài thêm.`,
+
+`Càng trưởng thành...
+
+Anh càng hiểu.
+
+Đúng hay sai...
+
+Đôi khi...
+
+Không quan trọng bằng...
+
+Việc còn muốn nắm tay nhau hay không.`,
+
+`Anh không muốn...
+
+Làm người giỏi nhất.
+
+Anh chỉ muốn...
+
+Là người khiến em...
+
+Cảm thấy bình yên nhất.`,
+
+`Có những lời xin lỗi...
+
+Không thể quay ngược thời gian.
+
+Nhưng...
+
+Có thể khiến một người...
+
+Bắt đầu thay đổi.`,
+
+`Anh không hứa...
+
+Sẽ không bao giờ làm em buồn.
+
+Nhưng anh hứa...
+
+Sẽ học cách...
+
+Làm em buồn ít hơn hôm qua.`,
+
+`Yêu một người...
+
+Không phải là giữ họ.
+
+Mà là...
+
+Để họ luôn cảm thấy...
+
+Được tôn trọng.`,
+
+`Anh luôn tin...
+
+Một mối quan hệ đẹp...
+
+Không phải vì...
+
+Chưa từng cãi nhau.
+
+Mà vì...
+
+Sau mỗi lần như vậy...
+
+Vẫn muốn hiểu nhau hơn.`,
+
+`Có người nói...
+
+Thời gian sẽ thay đổi mọi thứ.
+
+Anh thì nghĩ...
+
+Thời gian...
+
+Chỉ làm rõ...
+
+Ai là người...
+
+Mình thật sự trân trọng.`,
+
+`Nếu có điều gì...
+
+Anh muốn cảm ơn.
+
+Thì là...
+
+Cảm ơn em...
+
+Đã từng xuất hiện...
+
+Trong những năm tháng đẹp nhất.`,
+
+`Nhờ có em...
+
+Anh biết...
+
+Mình vẫn có thể cười rất nhiều.
+
+Chỉ vì một người.`,
+
+`Nhờ có em...
+
+Anh biết...
+
+Một tin nhắn ngắn.
+
+Cũng đủ...
+
+Làm cả ngày trở nên vui hơn.`,
+
+`Anh từng nghĩ...
+
+Mình hiểu em.
+
+Sau này mới biết...
+
+Hiểu một người...
+
+Là việc phải học...
+
+Suốt cả đời.`,
+
+`Có những ngày...
+
+Mọi chuyện không như ý.
+
+Chỉ cần còn một người...
+
+Muốn ngồi xuống...
+
+Lắng nghe nhau.
+
+Đã là điều rất đáng quý.`,
+
+`Anh thích...
+
+Những điều bình thường.
+
+Một bữa ăn.
+
+Một cái nắm tay.
+
+Một câu hỏi...
+
+"Hôm nay em có mệt không?"`,
+
+`Nếu sau này...
+
+Em gặp ai đó.
+
+Anh chỉ mong...
+
+Người ấy...
+
+Sẽ luôn dịu dàng với em.`,
+
+`Còn nếu...
+
+Người đó là anh.
+
+Anh sẽ cố gắng...
+
+Để xứng đáng hơn hôm nay.`,
+
+`Anh không muốn...
+
+Chứng minh điều gì.
+
+Anh chỉ muốn...
+
+Sự thay đổi của mình...
+
+Tự nói lên tất cả.`,
+
+`Có những người...
+
+Đi ngang cuộc đời.
+
+Có những người...
+
+Ở lại trong ký ức.
+
+Em...
+
+Là người...
+
+Anh luôn biết ơn.`,
+
+`Thật ra...
+
+Hạnh phúc...
+
+Không phải là có tất cả.
+
+Mà là...
+
+Biết trân trọng...
+
+Những gì mình từng có.`,
+
+`Nếu một ngày...
+
+Em đọc đến đây.
+
+Hy vọng...
+
+Em sẽ mỉm cười.
+
+Đừng khóc nhé.
+
+Em cười đẹp hơn nhiều.`,
+
+`Anh vẫn thích...
+
+Phiên bản em...
+
+Hay cười.
+
+Hay kể chuyện.
+
+Hay giận.
+
+Và cũng rất dễ mềm lòng.`,
+
+`Anh tin...
+
+Điều tốt đẹp.
+
+Đến chậm một chút...
+
+Cũng không sao.
+
+Miễn là...
+
+Đừng từ bỏ nó.`,
+
+`Có lẽ...
+
+Điều trưởng thành nhất...
+
+Anh học được.
+
+Là biết...
+
+Yêu một người...
+
+Bằng sự tử tế.`,
+
+`Nếu sau này...
+
+Chúng mình gặp lại.
+
+Anh hy vọng.
+
+Cả hai...
+
+Đều sẽ mỉm cười.`,
+
+`Không phải vì...
+
+Mọi chuyện từng hoàn hảo.
+
+Mà vì...
+
+Chúng ta...
+
+Đều đã trưởng thành hơn.`,
+
+`Và dù tương lai...
+
+Có viết tiếp câu chuyện này hay không.
+
+Anh vẫn luôn...
+
+Biết ơn...
+
+Vì đã từng có em.
+
+❤️`
+
+];
+
+function showEnding() {
+  endingScene.classList.add("show");
+
+  let current = 0;
+
+  function revealText(text, onComplete) {
+    endingText.innerHTML = "";
+    endingText.classList.add("show");
+
+    const lines = text.split("\n");
+    const allChars = [];
+
+    lines.forEach((line) => {
+      const lineEl = document.createElement("div");
+      lineEl.className = "ending-line";
+
+      Array.from(line).forEach((char) => {
+        const charEl = document.createElement("span");
+        charEl.className = "ending-char";
+        charEl.textContent = char === " " ? "\u00A0" : char;
+        if (char === " ") {
+          charEl.classList.add("space");
+        }
+        lineEl.appendChild(charEl);
+        allChars.push(charEl);
+      });
+
+      endingText.appendChild(lineEl);
+    });
+
+    requestAnimationFrame(() => {
+      allChars.forEach((charEl, index) => {
+        setTimeout(() => {
+          charEl.classList.add("visible");
+        }, index * 25);
+      });
+    });
+
+    const duration = Math.max(600, allChars.length * 28 + 900);
+    setTimeout(() => {
+      if (onComplete) onComplete();
+    }, duration);
+  }
+
+  function nextMessage() {
+    if (current >= endingMessages.length) {
+      setTimeout(() => {
+        restartStory.classList.add("show");
+      }, 8000);
+      return;
+    }
+
+    revealText(endingMessages[current], () => {
+      current += 1;
+      setTimeout(nextMessage, 2600);
+    });
+  }
+
+  nextMessage();
+}
+
+restartStory.onclick = () => {
+
+    location.reload();
+
+};
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
 } else {
