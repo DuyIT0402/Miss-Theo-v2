@@ -28,8 +28,8 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 30%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.74));
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.06), transparent 24%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.46));
   pointer-events: none;
   z-index: -1;
 }
@@ -455,7 +455,7 @@ pointer-events: auto;
 @media (max-width: 480px) {
   body {
     background-image: url("https://i.pinimg.com/originals/80/93/eb/8093eb596b38846d47cf30feb907d68f.gif");
-    background-color: #06020f;
+    background-color: transparent;
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
@@ -463,17 +463,18 @@ pointer-events: auto;
   }
 
   body::before {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.78));
-    opacity: 0.95;
+    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.04), transparent 30%),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.26));
+    opacity: 0.48;
   }
 
   body::after {
-    opacity: 0.05;
+    opacity: 0.08;
     background-size: 140px 140px;
   }
 
   #intro-screen {
-    background: linear-gradient(180deg, rgba(6, 2, 15, 0.16), rgba(6, 2, 15, 0.62));
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.18));
   }
 
   #intro-screen::before {
